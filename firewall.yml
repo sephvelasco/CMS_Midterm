@@ -1,0 +1,38 @@
+---
+- name: Firewall Setup
+  hosts: all
+  become: true
+  tasks:
+  - name: Install UFW (Ubuntu)
+    ansible.builtin.apt:
+      name: ufw
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Install Firewalld (CentOS)
+    ansible.builtin.yum:
+      name: firewalld
+      state: latest
+    when: ansible_distribution == "CentOS"
+
+  - name: Enable UFW (Ubuntu)
+    ansible.builtin.command: ufw enable
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Start and Enable Firewalld (CentOS)
+    ansible.builtin.service:
+      name: firewalld
+      state: started
+      enabled: true
+    when: ansible_distribution == "CentOS"
+
+  - name: Allow SSH on UFW (Ubuntu)
+    ansible.builtin.command: ufw allow ssh
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Configure Firewalld (CentOS)
+    ansible.builtin.firewalld:
+      port: 22/tcp
+      permanent: true
+      state: enabled
+    when: ansible_distribution == "CentOS"
